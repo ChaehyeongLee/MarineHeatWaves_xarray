@@ -6,7 +6,7 @@ A Python library for detecting and analyzing Marine Heat Waves (MHWs) using xarr
 
 ## Overview
 
-This package provides efficient functions for calculating marine heatwave properties from sea surface temperature data. It is designed to work with n-dimensional datasets (e.g., time, latitude, longitude, depth coordinates) and leverages xarray for handling labeled multi-dimensional arrays with optimized chunking for distributed computing.
+This package provides efficient functions for calculating marine heatwave properties from ocean temperature data. It is designed to work with n-dimensional datasets (e.g., time, latitude, longitude, depth coordinates) and leverages xarray for handling labeled multi-dimensional arrays with optimized chunking for distributed computing.
 
 ## Features
 
