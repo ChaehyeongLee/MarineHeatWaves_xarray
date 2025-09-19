@@ -293,9 +293,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 If you use this code in your research, please cite:
 
 ```
-Lee, C. (2025). MarineHeatWaves_xarray: Optimized functions for multi-dimensional, 
-distributed computing-based MHW calculations. GitHub repository: 
-https://github.com/ChaehyeongLee/MarineHeatWaves_xarray
+Chaehyeong Lee. (2025). ChaehyeongLee/MarineHeatWaves_xarray.py (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.17162588
 ```
 
 ## References
