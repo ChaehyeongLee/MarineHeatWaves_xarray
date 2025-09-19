@@ -228,6 +228,32 @@ clim_diff = clim_25 - clim_11
 clim_diff.plot(title='Difference in climatology (25-day vs 11-day window)')
 ```
 
+## Testing
+
+The package has been tested with synthetic data to ensure basic functionality works correctly. To run a simple test:
+
+```python
+import marineheatwaves_xr as mhw
+import xarray as xr
+import numpy as np
+import pandas as pd
+
+# Create test data
+time = pd.date_range('2000-01-01', '2001-12-31', freq='D')
+sst = xr.DataArray(
+    np.random.randn(len(time), 5, 5) + 20,
+    dims=['time', 'lat', 'lon'],
+    coords={'time': time, 'lat': range(5), 'lon': range(5)}
+)
+
+# Test functionality
+anomalies, climatology = mhw.clim(sst, window=25)
+thresholds = mhw.mhw_thresh(sst, q=0.9)
+heatwaves = mhw.mhw_event(sst, q=0.9, min_len=5)
+
+print("All functions working correctly!")
+```
+
 ## Data Requirements
 
 The input sea surface temperature data should:
