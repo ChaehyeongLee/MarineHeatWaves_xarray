@@ -1,2 +1,2 @@
 # MarineHeatWaves_xarray
-Optimized functions for MHW calculations comparable with multi-dimensional datasets on distributed computing
+Optimized functions for multi-dimensional, distributed computing-based MHW calculations.
