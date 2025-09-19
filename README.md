@@ -67,10 +67,10 @@ thresholds = mhw.mhw_thresh(sst_data, mhw_window=25, q=0.9)
 
 #### `mhw_event(da, q=0.9, mhw_window=25, min_len=5, max_gap=2)`
 
-Detect marine heatwave events in sea surface temperature data.
+Detect marine heatwave events in ocean temperature data.
 
 **Parameters:**
-- `da` (xarray.DataArray): Sea surface temperature data with time dimension
+- `da` (xarray.DataArray): ocean temperature data with time and spatial dimensions
 - `q` (float, default=0.9): Quantile threshold for defining heatwaves (0.9 = 90th percentile)
 - `mhw_window` (int, default=25): Window size in days for calculating thresholds
 - `min_len` (int, default=5): Minimum duration in days for a valid heatwave event
