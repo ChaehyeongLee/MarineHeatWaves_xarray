@@ -96,24 +96,24 @@ heatwaves = mhw.mhw_event(sst, q=0.9, min_len=5)
 print(f"Heatwave frequency: {heatwaves.sum().values} days")
 ```
 
-#### `mhw_thresh(ds, mhw_window=25, q=0.9)`
+#### `mhw_thresh(da, mhw_window=25, q=0.9)`
 
 Calculate marine heatwave threshold values for each day of year.
 
 **Parameters:**
-- `ds` (xarray.DataArray): Sea surface temperature data
+- `da` (xarray.DataArray): Sea surface temperature data
 - `mhw_window` (int, default=25): Window size for threshold calculation
 - `q` (float, default=0.9): Quantile for threshold (0.9 = 90th percentile)
 
 **Returns:**
 - `xarray.DataArray`: Threshold values for each day of year
 
-#### `clim(ds, window=25)`
+#### `clim(da, window=25)`
 
 Calculate climatology and anomalies from the input dataset.
 
 **Parameters:**
-- `ds` (xarray.DataArray): Input temperature data
+- `da` (xarray.DataArray): Input temperature data
 - `window` (int, default=25): Window size in days for climatology calculation
 
 **Returns:**
@@ -140,13 +140,13 @@ Remove linear trends and mean from the data.
 
 ### Utility Functions
 
-#### `_fill_missing(ds)`
+#### `_fill_missing(da)`
 Fill missing values in time coordinate and remove February 29th.
 
-#### `_add_doy_coord(ds)`
+#### `_add_doy_coord(da)`
 Add day-of-year coordinate to dataset.
 
-#### `_adjacent_doy_sel(ds, window=25)`
+#### `_adjacent_doy_sel(da, window=25)`
 Select adjacent day-of-year values within specified window.
 
 ## Performance Optimization
@@ -172,11 +172,17 @@ sst_chunked = sst.chunk({'time': -1, 'lat': 50, 'lon': 50})
 ### Dask Configuration
 
 ```python
+import os
+# Set these BEFORE you import numpy or xarray
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+
 import dask
 from dask.distributed import Client
 
 # Configure Dask for distributed computing
-client = Client(n_workers=4, threads_per_worker=2, memory_limit='4GB')
+client = Client(n_workers=4, threads_per_worker=1, memory_limit='4GB')
 
 # Process data
 with dask.config.set(scheduler='threads'):
