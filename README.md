@@ -2,7 +2,7 @@
 
 # MarineHeatWaves_xarray
 
-A Python library for detecting and analyzing Marine Heat Waves (MHWs) using xarray and optimized for multi-dimensional, distributed computing-based calculations.
+A Python library for detecting and analyzing Marine Heat Waves (MHWs) using xarray and optimized for multi-dimensional, distributed computing-based calculations. It is also powerful for detecting sub-surface marine heat waves.
 
 ## Overview
 
