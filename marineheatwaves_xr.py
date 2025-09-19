@@ -135,7 +135,7 @@ def _fill_short_gaps(sample_cond, max_gap=2):
 
 
 # main API: calc mhw -------------------------------------------------------------------------- 
-def mhw_event(da: xr.DataArray, q=0.9, mhw_window=25, min_len=5, max_gap=2) -> xr.DataArray:
+def mhw_event(da: xr.DataArray, q=0.9, thresh_window=25, min_len=5, max_gap=2) -> xr.DataArray:
     '''
     Return binary (bool-type) file have same structure as the input sea temperature dataset.
     '''
@@ -143,7 +143,7 @@ def mhw_event(da: xr.DataArray, q=0.9, mhw_window=25, min_len=5, max_gap=2) -> x
         da = _add_doy_coord(da)
 
     # Calculate marine heatwave threshold
-    thr = mhw_thresh(da, mhw_window=mhw_window, q=q)
+    thr = mhw_thresh(da, mhw_window=thresh_window, q=q)
 
     # The rest of the function remains the same...
     exceed = (da.groupby("doy") - thr) > 0
