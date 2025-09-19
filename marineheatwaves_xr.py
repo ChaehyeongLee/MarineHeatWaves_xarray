@@ -22,14 +22,14 @@ def _fill_missing(ds):
     full_time = pd.date_range(t0,t1,freq='D')
     full_time = full_time[~((full_time.month ==2) & (full_time.day==29))]
     
-    ds = ds1.reindex(time=full_time)
+    ds = ds.reindex(time=full_time)
     return ds
     
 def _add_doy_coord(ds):
     '''
     Add new day-of-year coordinate to avoid mismatch caused by removal of leap day
     '''
-    ds = _flling_missing(ds)
+    ds = _fill_missing(ds)
     key = ds.time.dt.strftime("%m-%d")
     ds  = ds.assign_coords(
             doy=("time", pd.to_datetime("2001-" + key.values).dayofyear.astype("int16"))
@@ -142,9 +142,8 @@ def mhw_event(da: xr.DataArray, q=0.9, mhw_window=25, min_len=5, max_gap=2) -> x
     if "doy" not in da.coords:
         da = _add_doy_coord(da)
 
-    # --- MODIFIED LINE ---
-    # Call the new, optimized threshold function
-    thr = mhw_thresh_optimised(da, mhw_window=mhw_window, q=q).persist()
+    # Calculate marine heatwave threshold
+    thr = mhw_thresh(da, mhw_window=mhw_window, q=q)
 
     # The rest of the function remains the same...
     exceed = (da.groupby("doy") - thr) > 0
