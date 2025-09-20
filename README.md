@@ -48,7 +48,7 @@ cd MarineHeatWaves_xarray
 import xarray as xr
 import marineheatwaves_xr as mhw
 
-# Load your sea surface temperature data
+# Load your ocean temperature data
 sst_data = xr.open_dataset('your_sst_file.nc')['sst']
 
 # Detect marine heatwave events
@@ -103,7 +103,7 @@ print(f"Heatwave frequency: {heatwaves.sum().values} days")
 Calculate marine heatwave threshold values for each day of year.
 
 **Parameters:**
-- `da` (xarray.DataArray): Sea surface temperature data
+- `da` (xarray.DataArray): Ocean temperature data
 - `mhw_window` (int, default=25): Window size for threshold calculation
 - `q` (float, default=0.9): Quantile for threshold (0.9 = 90th percentile)
 
@@ -264,7 +264,7 @@ print("All functions working correctly!")
 
 ## Data Requirements
 
-The input sea surface temperature data should:
+The input ocean temperature data should:
 
 - Be an xarray.DataArray with a time dimension
 - Have daily or sub-daily temporal resolution
