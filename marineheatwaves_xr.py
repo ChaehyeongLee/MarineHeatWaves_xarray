@@ -8,7 +8,7 @@ This is for getting Marine heatwave properties from sea temperature. It can be d
 
 For the best performance
 - The chunk size of the datasets should be 1/10 to 1/15 of the available memory of the worker.
-- Define an optimal chunk size after setting the largest available "time" coordinate at first.
+- Define an optimal chunk size after setting the largest available 'time' coordinate at first.
 
 '''
 
@@ -30,9 +30,9 @@ def _add_doy_coord(ds):
     Add new day-of-year coordinate to avoid mismatch caused by removal of leap day
     '''
     ds = _fill_missing(ds)
-    key = ds.time.dt.strftime("%m-%d")
+    key = ds.time.dt.strftime('%m-%d')
     ds  = ds.assign_coords(
-            doy=("time", pd.to_datetime("2001-" + key.values).dayofyear.astype("int16"))
+            doy=('time', pd.to_datetime('2001-' + key.values).dayofyear.astype('int16'))
           )
     return ds
 
@@ -43,7 +43,7 @@ def _adjacent_doy_sel(ds, window=25):
     '''
     doy = ds.doy    
     half = window // 2
-    doys = xr.DataArray(np.arange(1, 366, dtype="int16"), dims="doy")
+    doys = xr.DataArray(np.arange(1, 366, dtype='int16'), dims='doy')
 
     # circular distance in [-182, 182]
     dist = ((doy - doys + 183) % 365) - 182        # dims: (time, doy)
@@ -56,13 +56,13 @@ def _adjacent_doy_sel(ds, window=25):
     return ds_masked
 
 def clim(ds, window=25):
-    if "doy" not in ds.coords:
+    if 'doy' not in ds.coords:
         ds = _add_doy_coord(ds)
         
     doy = ds.doy
     ds_masked = _adjacent_doy_sel(ds, window=window)
         
-    clim = ds_masked.mean(dim="time")
+    clim = ds_masked.mean(dim='time')
     return ds.groupby('doy') - clim, clim
 
 def normalize_xr(da):
@@ -73,19 +73,19 @@ def normalize_xr(da):
 
 # mhw_threshold --------------------------------------------------------------------------------
 def mhw_thresh(ds, mhw_window=25, q=0.9):
-    """
+    '''
     Marine heatwave threshold is defined as top 90% within the window at each doy of year
-    """
-    if "doy" not in ds.coords:
+    '''
+    if 'doy' not in ds.coords:
         ds = _add_doy_coord(ds)
 
-    ds_doy = ds.groupby("doy").mean("time")
+    ds_doy = ds.groupby('doy').mean('time')
 
     # --- Pad and Roll Technique for Circular Window ---
     half_window = mhw_window // 2
     pad_start = ds_doy.isel(doy=slice(-half_window, None))
     pad_end = ds_doy.isel(doy=slice(None, half_window))
-    ds_padded = xr.concat([pad_start, ds_doy, pad_end], dim="doy")
+    ds_padded = xr.concat([pad_start, ds_doy, pad_end], dim='doy')
 
     # --- CORRECTED LINE ---
     # Use .reduce() with np.nanquantile. This is the most robust method.
@@ -100,9 +100,9 @@ def mhw_thresh(ds, mhw_window=25, q=0.9):
 # ----------------------------------------------------------------------------------------------
 
 def _mhw_event_1d(exceed_bool, min_len=5, max_gap=2):
-    """
+    '''
     Order: keep ≥min_len runs first, then fill short gaps. Return len==time.
-    """
+    '''
     a = np.asarray(exceed_bool, dtype=bool)
     labels, n = ndimage.label(a)          # label 1-runs in exceedances
     if n == 0:
@@ -115,9 +115,9 @@ def _mhw_event_1d(exceed_bool, min_len=5, max_gap=2):
     return kept_filled                               # <-- shape == (time,)
 
 def _fill_short_gaps(sample_cond, max_gap=2):
-    """
+    '''
     Fill a 0-run with 1s if it is between two 1-runs and its length <= max_gap.
-    """
+    '''
     a = np.asarray(sample_cond, dtype=bool)
     if a.size == 0:
         return a
@@ -135,32 +135,36 @@ def _fill_short_gaps(sample_cond, max_gap=2):
 
 
 # main API: calc mhw -------------------------------------------------------------------------- 
-def mhw_event(da: xr.DataArray, q=0.9, thresh_window=25, min_len=5, max_gap=2) -> xr.DataArray:
+def mhw_event(da: xr.DataArray, q=0.9, thresh_window=25, min_len=5, max_gap=2) -> xr.Dataset:
     '''
     Return binary (bool-type) file have same structure as the input sea temperature dataset.
     '''
-    if "doy" not in da.coords:
+    if 'doy' not in da.coords:
         da = _add_doy_coord(da)
 
-    # Calculate marine heatwave threshold
+    # Calculate marine heatwave threshold and intensity
     thr = mhw_thresh(da, mhw_window=thresh_window, q=q)
-
-    # The rest of the function remains the same...
-    exceed = (da.groupby("doy") - thr) > 0
-    exceed = exceed.chunk({"time": -1})
+    int = da.groupby('doy') - thr
+    
+    exceed = int > 0
+    
     mhw = xr.apply_ufunc(
         _mhw_event_1d,
         exceed,
-        input_core_dims=[["time"]],
-        output_core_dims=[["time"]],
+        input_core_dims=[['time']],
+        output_core_dims=[['time']],
         vectorize=True,
-        dask="parallelized",
+        dask='parallelized',
         output_dtypes=[bool],
         dask_gufunc_kwargs={
             'allow_rechunk': True,
             'output_sizes': {'time': da.sizes['time']}
         },
-        kwargs={"min_len": min_len, "max_gap": max_gap},
+        kwargs={'min_len': min_len, 'max_gap': max_gap},
     )
-    # The result of the ufunc is a DataArray, so we can rename it directly
-    return mhw.rename("mhw")
+    mhw = mhw.rename('event')
+    int = int.where(mhw).rename('intensity')
+
+    mhw_result = xr.merge([mhw,int]).compute()
+    
+    return mhw_result
