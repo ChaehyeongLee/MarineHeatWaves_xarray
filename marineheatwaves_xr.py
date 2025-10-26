@@ -78,20 +78,13 @@ def mhw_thresh(ds, mhw_window=25, q=0.9):
     '''
     if 'doy' not in ds.coords:
         ds = _add_doy_coord(ds)
-
-    ds_doy = ds.groupby('doy').mean('time')
-
-    half_window = mhw_window // 2
-    pad_start = ds_doy.isel(doy=slice(-half_window, None))
-    pad_end = ds_doy.isel(doy=slice(None, half_window))
-    ds_padded = xr.concat([pad_start, ds_doy, pad_end], dim='doy')
-
-    rolling_window = ds_padded.rolling(doy=mhw_window, center=True)
-    thresh = rolling_window.reduce(np.nanquantile, q=q)
-
-    thresh = thresh.isel(doy=slice(half_window, -half_window))
+        
+    doy = ds.doy
+    ds_masked = _adjacent_doy_sel(ds, window=window)
+        
+    thr = ds_masked.quantile(dim='time',q=q)
     
-    return thresh
+    return thr
 # ----------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------
 
