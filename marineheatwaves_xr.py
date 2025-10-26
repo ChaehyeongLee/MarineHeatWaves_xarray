@@ -81,17 +81,13 @@ def mhw_thresh(ds, mhw_window=25, q=0.9):
 
     ds_doy = ds.groupby('doy').mean('time')
 
-    # --- Pad and Roll Technique for Circular Window ---
     half_window = mhw_window // 2
     pad_start = ds_doy.isel(doy=slice(-half_window, None))
     pad_end = ds_doy.isel(doy=slice(None, half_window))
     ds_padded = xr.concat([pad_start, ds_doy, pad_end], dim='doy')
 
-    # --- CORRECTED LINE ---
-    # Use .reduce() with np.nanquantile. This is the most robust method.
     rolling_window = ds_padded.rolling(doy=mhw_window, center=True)
     thresh = rolling_window.reduce(np.nanquantile, q=q)
-    # --- End of Correction ---
 
     thresh = thresh.isel(doy=slice(half_window, -half_window))
     
